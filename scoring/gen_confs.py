@@ -25,12 +25,10 @@ def get_structure(smi, name):
     new_mol.SetProp("_Name", name)
     return new_mol
 
-
-def df2sdfs(df, filename):
-    structures = df.apply(lambda x: get_structure(x['smi'], x['id']), axis=1)
+def smi2sdfs(smis, filename):
+    structures = [get_structure(smi, str(i)) for i, smi in enumerate(smis)]
     molecules = [mol for mol in structures if mol is not None]
     w = SDWriter(filename)
     for mol in molecules:
-        print('write pose')
         w.write(mol)
     w.close()

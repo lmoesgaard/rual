@@ -1,14 +1,14 @@
-from joblib import Parallel, delayed
-import pandas as pd
-from rdkit import Chem, DataStructs
-from rdkit.Chem import rdFingerprintGenerator
-import numpy as np
-from pathlib import Path
-import shutil
 import sys
+import shutil
 import argparse
 import logging
 from typing import Tuple
+from pathlib import Path
+from joblib import Parallel, delayed
+import pandas as pd
+import numpy as np
+from rdkit import Chem, DataStructs
+from rdkit.Chem import rdFingerprintGenerator
 
 
 class DBBuilder:

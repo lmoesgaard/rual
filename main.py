@@ -1,8 +1,8 @@
 import sys
 import json
+import importlib
 from rual.rual import RUAL
 
-import importlib
 
 def get_scoring_tool(tool):
     module = importlib.import_module("scoring")

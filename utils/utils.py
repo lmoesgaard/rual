@@ -1,11 +1,14 @@
+import string 
+import random
+import pickle
+import json
+import os
+
 from rdkit import Chem, DataStructs
 from rdkit.Chem import rdFingerprintGenerator
 import numpy as np
 import pandas as pd
 import subprocess
-import pickle
-import json
-import os
 
 
 def smi2array(smi):
@@ -51,3 +54,8 @@ def save_config(settings):
     json_file = settings.config
     with open(json_file, 'w') as f:
         json.dump(settings.__dict__, f, indent=4, sort_keys=True)
+
+def generate_random_name(length=6):
+    characters = string.ascii_lowercase + string.digits
+    random_name = ''.join(random.choice(characters) for _ in range(length))
+    return random_name

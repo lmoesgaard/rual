@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-import sys
 import os
 
 class Database():
@@ -38,6 +37,6 @@ class Database():
     def read_fp_bundle(self, i):
         fp = np.load(os.path.join(self.path, 'fps', self.fp_files[i]))['array']
         assert fp.shape[0] == self.read_smi_bundle(i).shape[0], 'Number of SMILES and fingerprints do not match'
-        assert fp.shape[0] <= 10**6, 'More than 1 million fingerprints in a bundle'
+        assert fp.shape[0] <= self.max_bundle_size, 'More than 1 million fingerprints in a bundle'
         return fp
     

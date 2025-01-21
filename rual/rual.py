@@ -1,10 +1,11 @@
 import os
-import shutil
 import sys
-import pandas as pd
-import numpy as np
+import shutil
 import importlib
 from joblib import Parallel, delayed
+
+import pandas as pd
+import numpy as np
 
 from utils.utils import df2smi, split_df, pickle_data, add_fingerprint_to_dataframe
 from database.database import Database
@@ -43,7 +44,9 @@ class RUAL(Utilities):
         
         self.scorer = None
         self.model = get_model(args["model_name"])
-        self.db = Database(args["database"], self.base_bundles, self.max_bundle_size)
+        self.db = Database(path=args["database"], 
+                           base_bundles=self.base_bundles, 
+                           max_bundle_size=self.max_bundle_size)
         self.create_output_dir()
         
 

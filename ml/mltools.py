@@ -1,6 +1,6 @@
+import sys
 import numpy as np
 import importlib
-import sys
 
 
 def get_model(modelname):

@@ -1,1 +1,1 @@
-from scoring.scorers import LogP
+from scoring.scorers import LogP, SMINA
