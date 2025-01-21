@@ -9,7 +9,7 @@ import numpy as np
 
 from utils.utils import df2smi, split_df, pickle_data, add_fingerprint_to_dataframe
 from database.database import Database
-from rual.basics import Utilities
+from al.basics import Utilities
 from ml.mltools import get_model
 
 

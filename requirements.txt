@@ -1,0 +1,5 @@
+numpy
+pandas
+pyarrow
+rdkit-pypi
+scikit-learn

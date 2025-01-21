@@ -1,7 +1,7 @@
 import sys
 import json
 import importlib
-from rual.rual import RUAL
+from al.rual import RUAL
 
 
 def get_scoring_tool(tool):
