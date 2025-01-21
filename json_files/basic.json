@@ -1,0 +1,19 @@
+{
+    "O": true,
+    "base_bundles": 1,
+    "batch_size": 10000,
+    "config": "json_files/basic.json",
+    "cpus": 10,
+    "database": "/Users/moesgaard/scratch/rual_db",
+    "final_sample": 20000,
+    "iterations": 10,
+    "l": "test_l.pdbqt",
+    "max_bundle_size": 1000000,
+    "model_name": "NN1",
+    "o": "/Users/moesgaard/scratch/rual",
+    "r": "test_r.pdbqt",
+    "restart": 1,
+    "scorer": "LogP",
+    "smina": "/Users/moesgaard/Code/smina.static",
+    "test_fraction": 0
+}
