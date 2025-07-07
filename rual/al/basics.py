@@ -5,7 +5,7 @@ from joblib import Parallel, delayed
 import pandas as pd
 import numpy as np
 
-from ml.mltools import get_train_mask
+from rual.ml.mltools import get_train_mask
 
 
 class Utilities():
@@ -39,15 +39,15 @@ class Utilities():
             self.taken = pickle.load(open(os.path.join(self.output, 'taken.pkl'), 'rb'))
             self.db.visits = pickle.load(open(os.path.join(self.output, 'visits.pkl'), 'rb'))
 
-    def create_docking_dir(self):
+    def create_scoring_dir(self):
         """
-        Create working directory for docking
+        Create working directory for scoring
         """
         self.workdir = os.path.join(self.output, f'round{self.round}')
         os.mkdir(self.workdir)
-        dockdir = os.path.join(self.workdir, 'docking')
-        os.mkdir(dockdir)
-        return dockdir
+        scordir = os.path.join(self.workdir, 'scoring')
+        os.mkdir(scordir)
+        return scordir
     
     def predict(self, id):
         fps = self.db.read_fp_bundle(id)
@@ -58,7 +58,7 @@ class Utilities():
     
     def make_predictions(self, fileids):
         """
-        Predict the docking scores for the molecules in the files specified by fileids
+        Predict the scores for the molecules in the files specified by fileids
         """
         pred = Parallel(n_jobs=min(len(fileids), self.cpus))(delayed(self.predict)(fid) for fid in fileids)
         pred = pd.concat(pred)
@@ -88,7 +88,7 @@ class Utilities():
 
     def save_fps(self, df):
         """
-        Save the fingerprints and docking scores to a numpy file
+        Save the fingerprints and scores to a numpy file
         """
         # if round == 1: split data into trainset and testset
         if self.round == 1: 

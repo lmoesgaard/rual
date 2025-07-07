@@ -7,14 +7,14 @@ from joblib import Parallel, delayed
 import pandas as pd
 import numpy as np
 
-from utils.utils import df2smi, split_df, pickle_data, add_fingerprint_to_dataframe
-from database.database import Database
-from al.basics import Utilities
-from ml.mltools import get_model
+from rual.utils.utils import df2smi, split_df, pickle_data, add_fingerprint_to_dataframe
+from rual.database.database import Database
+from rual.al.basics import Utilities
+from rual.ml.mltools import get_model
 
 
 def get_model(modelname):
-    module = importlib.import_module("ml.models")
+    module = importlib.import_module("rual.ml.models")
     try:
         return getattr(module, modelname)()
     except:
@@ -55,13 +55,13 @@ class RUAL(Utilities):
         if self.round == self.iterations:
             self.final = True
 
-        # create new directory for docking
-        dockdir = self.create_docking_dir()
+        # create new directory for scoring
+        scordir = self.create_scoring_dir()
 
         # select fileids from database
         fileids = self.db.query_db(round=self.round, final=self.final)
         
-        # run predictions using ML model on selected files and remove those that are already docked
+        # run predictions using ML model on selected files and remove those that are already scored
         pred = self.make_predictions(fileids)
 
         # extract best molecules from predictions, store round number, and update taken set
@@ -76,10 +76,10 @@ class RUAL(Utilities):
         bestmol = self.add_smiles_to_df(bestmol)
         df2smi(bestmol, os.path.join(self.workdir, f'molecules_r{self.round}.smi'))
 
-        # run docking on multiple cores:
-        bestmol = Parallel(n_jobs=self.cpus)(delayed(self.scorer.score)(subset, dockdir) for subset in split_df(bestmol, self.cpus))
+        # run scoring on multiple cores:
+        bestmol = Parallel(n_jobs=self.cpus)(delayed(self.scorer.score)(subset, scordir) for subset in split_df(bestmol, self.cpus))
         bestmol = pd.concat(bestmol)
-        shutil.rmtree(dockdir)
+        shutil.rmtree(scordir)
 
         # save df-data as parquet file
         bestmol.to_parquet(os.path.join(self.output, f'output_r{self.round}.parquet'))

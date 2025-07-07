@@ -1,15 +1,16 @@
 import sys
 import json
 import importlib
-from al.rual import RUAL
+from rual.al.rual import RUAL
 
 
 def get_scoring_tool(tool):
-    module = importlib.import_module("scoring")
+    module = importlib.import_module(tool["module"])
+    classname = tool["classname"]
     try:
-        return getattr(module, tool)
+        return getattr(module, classname)
     except:
-        print(f"Could not find scorer: {tool}")
+        print(f"Could not find scorer: {classname}")
         sys.exit()
 
 def main(json_filename):

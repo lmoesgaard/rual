@@ -5,8 +5,8 @@ from rdkit import Chem
 from rdkit.Chem.Descriptors import MolLogP
 from rdkit import RDLogger
 
-from utils.utils import generate_random_name, submit_job
-from scoring.gen_confs import smi2sdfs
+from rual.utils.utils import generate_random_name, submit_job
+from rual.scoring.gen_confs import smi2sdfs
 
 
 class Scorer(ABC):
@@ -29,9 +29,6 @@ class LogP():
         return logp
 
     def score(self, df, workdir):
-        """
-        Run docking on dataframe with a smi and a uniqueid column
-        """
         df["score"] = df.apply(lambda x: self.smi2logp(x['smi']), axis=1)
         return df
 
