@@ -14,6 +14,8 @@ from rual.ml.mltools import get_model
 
 
 def get_model(modelname):
+    if modelname is None:
+        return None
     module = importlib.import_module("rual.ml.models")
     try:
         return getattr(module, modelname)()
