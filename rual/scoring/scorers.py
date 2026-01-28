@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 import os
+import subprocess
 
 from rdkit import Chem
 from rdkit.Chem.Descriptors import MolLogP
@@ -41,14 +42,53 @@ class SMINA():
         pass
 
     def run_smina_job(self, conf_file):
-        output = conf_file.replace(".", "_out.")
-        job = f'{self.smina} -r {self.r} -l {conf_file} \
-                --autobox_ligand {self.l} -o {output} \
-                --cpu 1 --num_modes 1 --exhaustiveness {self.exhaustiveness}'
-        submit_job(job)
+        base, ext = os.path.splitext(conf_file)
+        output = f"{base}_out{ext}"
+
+        cmd = [
+            self.smina,
+            "-r",
+            self.r,
+            "-l",
+            conf_file,
+            "--autobox_ligand",
+            self.l,
+            "-o",
+            output,
+            "--cpu",
+            "1",
+            "--num_modes",
+            "1",
+            "--exhaustiveness",
+            str(self.exhaustiveness),
+        ]
+
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        if result.returncode != 0 or not os.path.exists(output):
+            log_path = f"{base}_smina.log"
+            try:
+                with open(log_path, "w") as f:
+                    f.write("COMMAND:\n" + " ".join(cmd) + "\n\n")
+                    f.write("STDOUT:\n" + (result.stdout or "") + "\n\n")
+                    f.write("STDERR:\n" + (result.stderr or "") + "\n")
+            except OSError:
+                log_path = None
+
+            msg = [
+                "SMINA failed to produce an output SDF.",
+                f"Return code: {result.returncode}",
+                f"Conf file: {conf_file}",
+                f"Expected output: {output}",
+            ]
+            if log_path is not None:
+                msg.append(f"See log: {log_path}")
+            raise RuntimeError(" ".join(msg))
+
         return output
     
     def get_scores(self, scores, output):
+        if not os.path.exists(output):
+            raise RuntimeError(f"SMINA output file not found: {output}")
         RDLogger.DisableLog('rdApp.warning')
         supplier = Chem.SDMolSupplier(output)
         for mol in supplier:

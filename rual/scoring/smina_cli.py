@@ -4,8 +4,10 @@ import shutil
 import tempfile
 
 import pandas as pd
+from joblib import Parallel, delayed
 
 from rual.scoring.scorers import SMINA
+from rual.utils.utils import split_df
 
 
 def _read_smi(path: str) -> pd.DataFrame:
@@ -31,6 +33,35 @@ def _read_smi(path: str) -> pd.DataFrame:
     return df
 
 
+def _score_chunk(chunk: pd.DataFrame, scorer_args: dict, run_workdir: str, keep_workdir: bool) -> pd.DataFrame:
+    """Score a chunk of SMILES.
+
+    Returns a dataframe with columns: __rowid, score.
+    """
+    os.makedirs(run_workdir, exist_ok=True)
+    chunk_dir = tempfile.mkdtemp(prefix="chunk_", dir=run_workdir)
+    scorer = SMINA(scorer_args)
+
+    try:
+        df_scored = scorer.score(chunk[["smi"]].copy(), chunk_dir)
+        out = pd.DataFrame(
+            {
+                "__rowid": chunk["__rowid"].to_numpy(),
+                "score": df_scored["score"].to_numpy(),
+            }
+        )
+    except Exception:
+        # Keep the chunk directory on failure for debugging.
+        raise
+    else:
+        if not keep_workdir:
+            try:
+                shutil.rmtree(chunk_dir)
+            except OSError:
+                pass
+        return out
+
+
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(
         description="Run SMINA docking for a .smi file and write scores to .csv.",
@@ -47,6 +78,15 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--l", required=True, help="Path to reference ligand .pdbqt (used for autobox)")
     parser.add_argument("--smina", required=True, help="Path to SMINA executable (or name on PATH)")
     parser.add_argument("--exhaustiveness", type=int, default=1, help="SMINA exhaustiveness (default: 1)")
+
+    parser.add_argument(
+        "--n-proc",
+        "--cpus",
+        dest="n_proc",
+        type=int,
+        default=1,
+        help="Number of parallel SMINA processes (default: 1)",
+    )
 
     parser.add_argument(
         "--workdir",
@@ -84,31 +124,58 @@ def main(argv: list[str] | None = None) -> None:
             raise SystemExit(f"File not found: {p}")
 
     df = _read_smi(args.input)
+    df = df.reset_index(drop=True)
+    df["__rowid"] = range(len(df))
 
-    scorer = SMINA(
-        {
-            "r": args.r,
-            "l": args.l,
-            "smina": smina_exe,
-            "exhaustiveness": args.exhaustiveness,
-        }
-    )
+    scorer_args = {
+        "r": args.r,
+        "l": args.l,
+        "smina": smina_exe,
+        "exhaustiveness": args.exhaustiveness,
+    }
 
-    if args.workdir is None:
-        with tempfile.TemporaryDirectory(prefix="rual_smina_") as tmp:
-            df_scored = scorer.score(df[["smi"]].copy(), tmp)
+    # Use a per-run subdirectory to avoid deleting user-owned directories.
+    created_base_tmp = False
+    base_workdir = args.workdir
+    if base_workdir is None:
+        base_workdir = tempfile.mkdtemp(prefix="rual_smina_")
+        created_base_tmp = True
     else:
-        os.makedirs(args.workdir, exist_ok=True)
-        df_scored = scorer.score(df[["smi"]].copy(), args.workdir)
+        os.makedirs(base_workdir, exist_ok=True)
+
+    run_workdir = tempfile.mkdtemp(prefix="run_", dir=base_workdir)
+
+    n_proc = max(int(args.n_proc), 1)
+    n_proc = min(n_proc, len(df)) if len(df) > 0 else 1
+
+    chunks = split_df(df[["smi", "__rowid"]], n_proc)
+
+    try:
+        if n_proc == 1:
+            scored_parts = [_score_chunk(chunks[0], scorer_args, run_workdir, keep_workdir=args.keep_workdir)]
+        else:
+            scored_parts = Parallel(n_jobs=n_proc)(
+                delayed(_score_chunk)(chunk, scorer_args, run_workdir, keep_workdir=args.keep_workdir)
+                for chunk in chunks
+            )
+
+        scores_df = pd.concat(scored_parts, ignore_index=True)
+        df_out = df.merge(scores_df, on="__rowid", how="left")
+        df_out = df_out.drop(columns=["__rowid"])
+        df_out.to_csv(output_path, index=False)
+    finally:
+        # Clean up run directory if requested; always keep it on failure for debugging.
+        # (If an exception escapes, Python will skip this removal, leaving run_workdir intact.)
         if not args.keep_workdir:
             try:
-                shutil.rmtree(args.workdir)
+                shutil.rmtree(run_workdir)
             except OSError:
                 pass
-
-    df_out = df.copy()
-    df_out["score"] = df_scored["score"].to_numpy()
-    df_out.to_csv(output_path, index=False)
+        if created_base_tmp and not args.keep_workdir:
+            try:
+                shutil.rmtree(base_workdir)
+            except OSError:
+                pass
 
 
 if __name__ == "__main__":
