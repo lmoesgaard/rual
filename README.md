@@ -47,6 +47,7 @@ Below is a summary of key arguments used in both pipelines:
 | `iterations`     | `int`     | Total number of active learning iterations                                 |
 | `base_bundles`   | `int`     | Number of batches sampled in the first iteration                           |
 | `max_bundle_size`| `int`     | Maximum number of molecules in a bundle                                    |
+| `rual`           | `bool`    | If `True`, use ramp-up (subsample bundles each round). If `False`, run regular AL (predict all bundles each round) |
 | `model_name`     | `str`     | Name of the surrogate model (defined in `ml/models.py`)                    |
 | `test_fraction`  | `float`   | Fraction of data reserved as a test set after round 1                      |
 | `cpus`           | `int`     | Number of CPUs used per docking round                                      |

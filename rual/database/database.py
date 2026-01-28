@@ -3,7 +3,7 @@ import pandas as pd
 import os
 
 class Database():
-    def __init__(self, path, base_bundles, max_bundle_size=10**6, final_bundles=np.inf):
+    def __init__(self, path, base_bundles, max_bundle_size=10**6, final_bundles=np.inf, rual=True):
         self.path = path
         self.smi_files = {int(f.split(".")[0]): f for f in os.listdir(os.path.join(path, 'smis')) if f.endswith('.parquet')}
         self.fp_files = {int(f.split(".")[0]): f for f in os.listdir(os.path.join(path, 'fps')) if f.endswith('.npz')}
@@ -13,12 +13,15 @@ class Database():
         self.visits = np.zeros(self.n_bundles)
         self.min_bundles = base_bundles
         self.final_bundles = final_bundles
+        self.rual = bool(rual)
 
     def query_db(self, round, final=False):
-        p = self.get_props()  # probability of the bundle is proportional to how few times it has been selected
         if final:
             prospects = np.arange(min(self.n_bundles, self.final_bundles))
+        elif not self.rual:
+            prospects = np.arange(self.n_bundles)
         else:
+            p = self.get_props()  # probability of the bundle is proportional to how few times it has been selected
             prospects = np.random.choice(np.arange(self.n_bundles), # n bundles available
                                          size=min(self.min_bundles * 2 ** (round - 1), self.n_bundles), # number of bundles to select
                                          replace=False, p=p)

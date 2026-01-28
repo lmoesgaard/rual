@@ -41,6 +41,10 @@ class RUAL(Utilities):
             self.round = 1
         self.test_fraction = args['test_fraction']
 
+        # If False, run regular active learning (predict all bundles every round).
+        # Defaults to True to preserve the original RUAL ramp-up behavior.
+        self.rual = bool(args.get('rual', True))
+
         self.taken = set()
         self.final = False
         
@@ -48,7 +52,8 @@ class RUAL(Utilities):
         self.model = get_model(args["model_name"])
         self.db = Database(path=args["database"], 
                            base_bundles=self.base_bundles, 
-                           max_bundle_size=self.max_bundle_size)
+                           max_bundle_size=self.max_bundle_size,
+                           rual=self.rual)
         self.create_output_dir()
         
 
