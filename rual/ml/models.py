@@ -18,7 +18,8 @@ class NN1:
                                   tol=0.1,
                                   early_stopping=True,
                                   warm_start=True,
-                                  alpha=0.01
+                                  alpha=0.01,
+                                  n_jobs=-1
                                   )
         self.model.fit(np.random.randint(2, size=[1000, 2048]), np.random.randint(10, size=1000))
 
