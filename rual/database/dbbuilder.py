@@ -99,7 +99,10 @@ def main() -> None:
         SystemExit: If the input file does not exist.
     """
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-    parser = argparse.ArgumentParser(description='Process SMILES file', epilog='Example: python convert.py -O -i ZINC.smi -n 5 --cpu 5')
+    parser = argparse.ArgumentParser(
+        description='Process a SMILES file into a RUAL database (fps/ and smis/ bundles).',
+        epilog='Example: python -m rual.database.dbbuilder -O -i ZINC.smi -o ./rual_db -n 5 --cpu 5'
+    )
     parser.add_argument('-O', action='store_true', help='Allow overwriting of directories')
     parser.add_argument('-i', type=str, required=True, help='Input space-separated SMILES file without header')
     parser.add_argument('-o', type=str, default=".", help='Output destination to create directories fps and smis')

@@ -23,4 +23,9 @@ setup(
         "rdkit", 
         "scikit-learn",  
     ],
+    entry_points={
+        "console_scripts": [
+            "rual-dbbuilder=rual.database.dbbuilder:main",
+        ]
+    },
 )

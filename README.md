@@ -101,7 +101,13 @@ To use the `SMINA` scoring tool, the following arguments **must** be defined in 
 Before running RUAL, your molecule library must be preprocessed into fingerprint batches. This is done by running the dbbuilder from the command line:
 
 ```sh
-python3 rual/database/dbbuilder.py -O -i molecules.smi -o ./rual_db -n 10 --cpu 4
+python3 -m rual.database.dbbuilder -O -i molecules.smi -o ./rual_db -n 10 --cpu 4
+```
+
+If installed via `pip`, you can also run:
+
+```sh
+rual-dbbuilder -O -i molecules.smi -o ./rual_db -n 10 --cpu 4
 ```
 This script splits a `.smi` file into batches and generates:
 - `fps/`: NumPy files with Morgan fingerprints
