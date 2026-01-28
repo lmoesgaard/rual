@@ -96,6 +96,20 @@ To use the `SMINA` scoring tool, the following arguments **must** be defined in 
 - `smina`: Path to the SMINA executable (e.g., `/path/to/smina.static`)
 - *(Optional)* `exhaustiveness`: SMINA docking exhaustiveness (default: 1)
 
+#### Run SMINA From The Command Line
+
+To dock a standalone `.smi` file (space-separated `SMILES name`) and write a `.csv` with scores:
+
+```sh
+python3 -m rual.scoring.smina_cli -i molecules.smi -o scores.csv --r receptor.pdbqt --l ligand.pdbqt --smina /path/to/smina
+```
+
+If installed via `pip`, you can also run:
+
+```sh
+rual-smina -i molecules.smi -o scores.csv --r receptor.pdbqt --l ligand.pdbqt --smina /path/to/smina
+```
+
 ## Building a RUAL-Compatible Database
 
 Before running RUAL, your molecule library must be preprocessed into fingerprint batches. This is done by running the dbbuilder from the command line:

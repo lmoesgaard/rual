@@ -37,10 +37,7 @@ class SMINA():
         self.r = arguments['r']
         self.l = arguments['l']
         self.smina = arguments['smina']
-        if "exhaustiveness" in arguments:
-            self.exhaustiveness = arguments['exhaustiveness']
-        else:
-            self.exhaustiveness = 1
+        self.exhaustiveness = arguments.get('exhaustiveness', 1)
         pass
 
     def run_smina_job(self, conf_file):
@@ -73,4 +70,3 @@ class SMINA():
         scores = self.get_scores(scores=scores, output=output)
         df["score"] = scores
         return df
-    

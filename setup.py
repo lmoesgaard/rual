@@ -26,6 +26,7 @@ setup(
     entry_points={
         "console_scripts": [
             "rual-dbbuilder=rual.database.dbbuilder:main",
+            "rual-smina=rual.scoring.smina_cli:main",
         ]
     },
 )
