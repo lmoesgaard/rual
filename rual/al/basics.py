@@ -60,8 +60,8 @@ class Utilities():
         """
         Predict the scores for the molecules in the files specified by fileids
         """
-        #pred = Parallel(n_jobs=min(len(fileids), self.cpus))(delayed(self.predict)(fid) for fid in fileids)
-        pred = Parallel(n_jobs=1)(delayed(self.predict)(fid) for fid in fileids)
+        pred = Parallel(n_jobs=min(len(fileids), self.cpus))(delayed(self.predict)(fid) for fid in fileids)
+        #pred = Parallel(n_jobs=1)(delayed(self.predict)(fid) for fid in fileids)
         pred = pd.concat(pred)
         pred = pred[pred.apply(lambda x: x["unique_id"] not in self.taken, axis=1)]
         return pred
