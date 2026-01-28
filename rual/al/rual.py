@@ -17,11 +17,17 @@ def get_model(modelname):
     if modelname is None:
         return None
     module = importlib.import_module("rual.ml.models")
-    try:
-        return getattr(module, modelname)()
-    except:
-        print(f"Could not find model: {modelname}")
+    if not hasattr(module, modelname):
+        available = [k for k in dir(module) if not k.startswith("_")]
+        print(f"Could not find model: {modelname}. Available: {available}")
         sys.exit()
+
+    cls = getattr(module, modelname)
+    try:
+        return cls()
+    except Exception as e:
+        print(f"Failed to construct model '{modelname}': {e!r}")
+        raise
 
 class RUAL(Utilities):
     def __init__(self, args):
